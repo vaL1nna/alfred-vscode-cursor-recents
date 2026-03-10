@@ -1,13 +1,15 @@
 #!/bin/zsh
 set -euo pipefail
-APP_NAME="$1"
-TARGET="$2"
-if [ -z "$TARGET" ]; then
+
+EDITOR_KEY="${1:-code}"
+TARGET="${2:-}"
+
+if [[ -z "$TARGET" ]]; then
   exit 0
 fi
 
-if [ -d "/Applications/${APP_NAME}.app" ]; then
-  open -a "$APP_NAME" "$TARGET"
+if [[ "$EDITOR_KEY" == "cursor" ]]; then
+  open -a "Cursor" "$TARGET" >/dev/null 2>&1 || open "$TARGET"
 else
-  open "$TARGET"
+  open -a "Visual Studio Code" "$TARGET" >/dev/null 2>&1 || open "$TARGET"
 fi

@@ -1,65 +1,54 @@
-# alfred-vscode-cursor-recents
+# VS Code + Cursor Recents
 
-Search and open recent **VS Code** and **Cursor** projects from Alfred.
+Open recent **VS Code** and **Cursor** projects from Alfred.
 
-## Features
+It reads each editor's native **Open Recent** cache by default, and also supports custom recent-cache locations when your local setup is non-standard.
 
-- `vs ` → show VS Code recent projects
-- `co ` → show Cursor recent projects
-- Type after the keyword to filter results
-- Press Enter to open the selected project in the matching editor
-- Reads each editor's **Open Recent** menu cache, so results closely match the native list
+## Requirements
 
-## Platform
+- macOS
+- Alfred 5
+- VS Code or Cursor
 
-Currently supports **macOS** only.
+## Preview
 
-## How it works
+![vscode](images/vscode.png)
 
-This workflow reads the editors' local `storage.json` files and extracts recent folders/workspaces from the cached **File → Open Recent** menu data.
+![cursor](images/cursor.png)
 
-Default paths:
+## Usage
 
-- VS Code: `~/Library/Application Support/Code/User/globalStorage/storage.json`
-- Cursor: `~/Library/Application Support/Cursor/User/globalStorage/storage.json`
+- `vs` → search VS Code recents
+- `co` → search Cursor recents
+- `Enter` → open in the matching editor
 
-## Install
+## Highlights
 
-1. Download the latest `.alfredworkflow` file from Releases, or build it yourself.
-2. Double-click the file to import it into Alfred.
+- uses each editor's native **Open Recent** cache
+- supports VS Code, VS Code Insiders, Cursor, and Cursor Insiders
+- supports custom recent cache locations via configuration overrides
+- does **not** scan your filesystem
 
-## Build
+## Configuration
 
-```bash
-chmod +x build.sh
-./build.sh
-```
+The workflow should work out of the box on standard macOS installs.
 
-That will generate:
+Only change these if your editor's `storage.json` lives in a non-default location:
 
-```bash
-alfred-vscode-cursor-recents.alfredworkflow
-```
+- `vscode_storage_paths`
+- `cursor_storage_paths`
+- `debug_mode`
 
-## Configure
+Supported path formats:
 
-If your app names or storage paths differ, open Alfred and configure the workflow variables:
+- `:` separated paths
+- one path per line
 
-- `vscode_app_name` — default: `Visual Studio Code`
-- `cursor_app_name` — default: `Cursor`
-- `vscode_storage_path` — optional custom path
-- `cursor_storage_path` — optional custom path
+## Notes
 
-## Why the results may differ from the editor UI
-
-The workflow intentionally uses the editors' cached **Open Recent** menu data. If the editor has not written its latest state to disk yet, Alfred may lag behind briefly.
-
-## Repo layout
-
-- `info.plist` — Alfred workflow definition
-- `recent_projects.py` — reads and filters recent projects
-- `open_in_editor.sh` — opens the selected project in the target editor
-- `build.sh` — packages the workflow into a `.alfredworkflow` file
+- Only items already present in each editor's **Open Recent** menu are shown
+- The workflow does **not** scan your filesystem
+- `debug_mode=1` is only for troubleshooting
 
 ## License
 
