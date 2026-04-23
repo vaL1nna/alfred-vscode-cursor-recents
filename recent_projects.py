@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import json
 import os
+import sqlite3
 import sys
 from pathlib import Path
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 
 HOME = Path.home()
 SYSTEM = sys.platform
@@ -23,7 +24,12 @@ DEFAULTS = {
     "code": {
         "display": "VS Code",
         "env_prefix": "vscode",
-        "storage": [
+        "state_db": [
+            "~/Library/Application Support/Code/User/globalStorage/state.vscdb",
+            "~/Library/Application Support/Code/state.vscdb",
+            "~/Library/Application Support/Code - Insiders/User/globalStorage/state.vscdb",
+        ],
+        "storage_json": [
             "~/Library/Application Support/Code/User/globalStorage/storage.json",
             "~/Library/Application Support/Code/storage.json",
             "~/Library/Application Support/Code - Insiders/User/globalStorage/storage.json",
@@ -38,7 +44,12 @@ DEFAULTS = {
     "cursor": {
         "display": "Cursor",
         "env_prefix": "cursor",
-        "storage": [
+        "state_db": [
+            "~/Library/Application Support/Cursor/User/globalStorage/state.vscdb",
+            "~/Library/Application Support/Cursor/state.vscdb",
+            "~/Library/Application Support/Cursor - Insiders/User/globalStorage/state.vscdb",
+        ],
+        "storage_json": [
             "~/Library/Application Support/Cursor/User/globalStorage/storage.json",
             "~/Library/Application Support/Cursor/storage.json",
             "~/Library/Application Support/Cursor - Insiders/User/globalStorage/storage.json",
@@ -98,12 +109,26 @@ def unique_paths(*groups):
     return merged
 
 
+
+def configured_state_db_paths():
+    env_name = f"{CFG['env_prefix']}_recent_history_paths"
+    configured = split_path_values(os.environ.get(env_name, ""))
+    if configured:
+        return unique_paths(configured)
+    return unique_paths(CFG["state_db"])
+
+
 def configured_storage_paths():
-    env_name = f"{CFG['env_prefix']}_storage_paths"
-    return unique_paths(split_path_values(os.environ.get(env_name, "")), CFG["storage"])
+    derived = [
+        str(Path(expand_candidate(path)).with_name("storage.json"))
+        for path in CFG.get("state_db", [])
+        if Path(expand_candidate(path)).name == "state.vscdb"
+    ]
+    return unique_paths(derived, CFG["storage_json"])
 
 
-CFG["storage"] = configured_storage_paths()
+CFG["state_db"] = configured_state_db_paths()
+CFG["storage_json"] = configured_storage_paths()
 
 
 def shorten_home(path_str):
@@ -115,23 +140,109 @@ def format_path_list(paths):
     return " • ".join(shorten_home(path) for path in paths[:3])
 
 
-def load_storage():
+def build_recent_item(path_str, kind, recent_index):
+    title = os.path.basename(path_str.rstrip("/\\")) or path_str
+    return {
+        "uid": f"{EDITOR}:{kind}:{path_str}",
+        "title": title,
+        "subtitle": f"{'Workspace' if kind == 'workspace' else 'Folder'} • {shorten_home(path_str)}",
+        "arg": path_str,
+        "kind": kind,
+        "recent_index": recent_index,
+    }
+
+
+def dedupe_recent_items(items):
+    deduped = []
+    seen = set()
+    for item in items:
+        if item["arg"] in seen:
+            continue
+        seen.add(item["arg"])
+        deduped.append(item)
+    return deduped
+
+
+def decode_file_uri(uri):
+    if not uri:
+        return None
+
+    parsed = urlparse(uri)
+    if parsed.scheme and parsed.scheme != "file":
+        return None
+
+    if not parsed.scheme:
+        return unquote(uri)
+
+    path = unquote(parsed.path or "")
+    if parsed.netloc and parsed.netloc != "localhost":
+        path = f"//{parsed.netloc}{path}"
+    return path or None
+
+
+def load_state_recent_items():
     parse_errors = []
     searched = []
 
-    for candidate in CFG["storage"]:
+    for candidate in CFG.get("state_db", []):
         path_str = expand_candidate(candidate)
         searched.append(path_str)
         path = Path(path_str)
         if not path.exists():
             continue
+
+        connection = None
         try:
-            debug(f"Loading storage from {path}")
-            return json.loads(path.read_text(encoding="utf-8")), str(path), parse_errors, searched
+            debug(f"Loading recent history from {path}")
+            connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+            row = connection.execute(
+                "SELECT value FROM ItemTable WHERE key = ?",
+                ("history.recentlyOpenedPathsList",),
+            ).fetchone()
+            if not row:
+                continue
+
+            raw = row[0]
+            if isinstance(raw, bytes):
+                raw = raw.decode("utf-8")
+
+            data = json.loads(raw)
+            recent = []
+            for entry in data.get("entries") or []:
+                path_str = None
+                kind = None
+
+                folder_uri = entry.get("folderUri")
+                if folder_uri:
+                    path_str = decode_file_uri(folder_uri)
+                    kind = "folder"
+                else:
+                    workspace = entry.get("workspace") or {}
+                    workspace_uri = (
+                        entry.get("workspaceUri")
+                        or workspace.get("configPath")
+                        or workspace.get("workspaceUri")
+                        or workspace.get("uri")
+                    )
+                    if workspace_uri:
+                        path_str = decode_file_uri(workspace_uri)
+                        kind = "workspace"
+
+                if not path_str or kind is None:
+                    continue
+
+                recent.append(build_recent_item(path_str, kind, len(recent)))
+
+            if recent:
+                return dedupe_recent_items(recent), str(path), parse_errors, searched
         except Exception as exc:
-            debug(f"Failed to parse {path}: {exc}")
+            debug(f"Failed to read {path}: {exc}")
             parse_errors.append(f"{shorten_home(str(path))}: {exc}")
-    return None, None, parse_errors, searched
+        finally:
+            if connection is not None:
+                connection.close()
+
+    return [], None, parse_errors, searched
 
 
 def is_open_recent_item(item):
@@ -150,24 +261,6 @@ def menu_recent_items(data):
 
     recent = []
 
-    def build_recent_item(item_id, path_str):
-        if item_id == "openRecentFolder":
-            kind = "folder"
-        elif path_str.endswith(".code-workspace"):
-            kind = "workspace"
-        else:
-            return None
-
-        title = os.path.basename(path_str.rstrip("/\\")) or path_str
-        return {
-            "uid": f"{EDITOR}:{kind}:{path_str}",
-            "title": title,
-            "subtitle": f"{'Workspace' if kind == 'workspace' else 'Folder'} • {shorten_home(path_str)}",
-            "arg": path_str,
-            "kind": kind,
-            "recent_index": len(recent),
-        }
-
     def walk(items):
         for item in items or []:
             if is_open_recent_item(item):
@@ -180,25 +273,58 @@ def menu_recent_items(data):
                     path_str = unquote(uri.get("path") or "")
                     if not path_str:
                         continue
-                    recent_item = build_recent_item(item_id, path_str)
-                    if recent_item is None:
+                    if item_id == "openRecentFolder":
+                        kind = "folder"
+                    elif path_str.endswith(".code-workspace"):
+                        kind = "workspace"
+                    else:
                         continue
-                    recent.append(recent_item)
+                    recent.append(build_recent_item(path_str, kind, len(recent)))
                 return
+
             submenu = (item.get("submenu") or {}).get("items")
             if submenu:
                 walk(submenu)
 
     walk(file_items)
+    return dedupe_recent_items(recent)
 
-    dedup = []
-    seen = set()
-    for item in recent:
-        if item["arg"] in seen:
+
+def load_storage_recent_items():
+    parse_errors = []
+    searched = []
+
+    for candidate in CFG.get("storage_json", []):
+        path_str = expand_candidate(candidate)
+        searched.append(path_str)
+        path = Path(path_str)
+        if not path.exists():
             continue
-        seen.add(item["arg"])
-        dedup.append(item)
-    return dedup
+        try:
+            debug(f"Loading fallback storage from {path}")
+            data = json.loads(path.read_text(encoding="utf-8"))
+            recent = menu_recent_items(data)
+            if recent:
+                return recent, str(path), parse_errors, searched
+        except Exception as exc:
+            debug(f"Failed to parse {path}: {exc}")
+            parse_errors.append(f"{shorten_home(str(path))}: {exc}")
+
+    return [], None, parse_errors, searched
+
+
+def load_recent_items():
+    state_items, state_source, state_errors, state_searched = load_state_recent_items()
+    if state_items:
+        return state_items, state_source, state_errors, state_searched
+
+    storage_items, storage_source, storage_errors, storage_searched = load_storage_recent_items()
+    return (
+        storage_items,
+        storage_source,
+        state_errors + storage_errors,
+        unique_paths(state_searched, storage_searched),
+    )
 
 
 def normalize_segment(segment):
@@ -269,8 +395,8 @@ def filter_items(items, query):
 
 def resolve_app_icon_path():
     for candidate in CFG["icon_paths"]:
-        if os.path.exists(candidate):
-            return candidate
+        if os.path.exists(os.path.expanduser(candidate)):
+            return os.path.expanduser(candidate)
     return None
 
 
@@ -313,31 +439,29 @@ def main():
         fallback("macOS only", "This Alfred workflow supports macOS only.")
         return
 
-    data, source, parse_errors, searched = load_storage()
-    if not data:
-        if parse_errors:
-            subtitle = "Failed to parse storage.json. Enable debug_mode=1 for details."
-            if DEBUG:
-                subtitle = parse_errors[0]
-            fallback(f"Could not load {CFG['display']} recent data", subtitle)
-            return
-
-        searched_hint = format_path_list(searched) if searched else "No paths configured"
-        fallback(
-            f"Could not find {CFG['display']} recent data",
-            f"Check Workflow Configuration. Tried: {searched_hint}",
-        )
+    items, source, parse_errors, searched = load_recent_items()
+    if parse_errors and not items:
+        subtitle = "Failed to load recent history. Enable debug_mode=1 for details."
+        if DEBUG:
+            subtitle = parse_errors[0]
+        fallback(f"Could not load {CFG['display']} recent history", subtitle)
         return
 
-    items = menu_recent_items(data)
     if not items:
-        subtitle = f"Source: {shorten_home(source)}" if source else "Open the editor once to refresh its Open Recent cache."
-        fallback(f"No {CFG['display']} recent projects found", subtitle)
+        if source:
+            subtitle = f"Source: {shorten_home(source)}"
+            fallback(f"No {CFG['display']} recent projects found", subtitle)
+            return
+        searched_hint = format_path_list(searched) if searched else "No paths configured"
+        fallback(
+            f"Could not find {CFG['display']} recent history",
+            f"Set the advanced state.vscdb override if your history lives elsewhere. Tried: {searched_hint}",
+        )
         return
 
     items = filter_items(items, Q)
     if not items:
-        fallback("No matching projects", "Only items already present in the editor's Open Recent menu are shown.")
+        fallback("No matching projects", "Only items already present in the editor's recent history are shown.")
         return
 
     output(items)

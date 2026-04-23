@@ -9,7 +9,16 @@ if [[ -z "$TARGET" ]]; then
 fi
 
 if [[ "$EDITOR_KEY" == "cursor" ]]; then
-  open -a "Cursor" "$TARGET" >/dev/null 2>&1 || open "$TARGET"
+  APP_CANDIDATES=("Cursor" "Cursor - Insiders")
 else
-  open -a "Visual Studio Code" "$TARGET" >/dev/null 2>&1 || open "$TARGET"
+  APP_CANDIDATES=("Visual Studio Code" "Visual Studio Code - Insiders")
 fi
+
+for APP_NAME in "${APP_CANDIDATES[@]}"; do
+  if open -a "$APP_NAME" "$TARGET" >/dev/null 2>&1; then
+    exit 0
+  fi
+done
+
+echo "Could not open '$TARGET' in ${APP_CANDIDATES[*]}." >&2
+exit 1

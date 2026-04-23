@@ -2,191 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>name</key>
-	<string>VS Code + Cursor Recents</string>
-	<key>description</key>
-	<string>Search and open recent VS Code and Cursor projects from Alfred.</string>
 	<key>bundleid</key>
 	<string>ai.faker.alfred.vscode-cursor-recents</string>
-	<key>createdby</key>
-	<string>vaL1nna</string>
-	<key>disabled</key>
-	<false/>
-	<key>version</key>
-	<string>1.0.0</string>
 	<key>category</key>
 	<string>Productivity</string>
-	<key>variables</key>
-	<dict>
-		<key>vscode_storage_paths</key>
-		<string></string>
-		<key>cursor_storage_paths</key>
-		<string></string>
-		<key>debug_mode</key>
-		<string>0</string>
-		<key>vscode_storage_path</key>
-		<string></string>
-		<key>cursor_storage_path</key>
-		<string></string>
-	</dict>
-	<key>objects</key>
-	<array>
-		<dict>
-			<key>uid</key>
-			<string>INPUT-VS</string>
-			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
-			<key>version</key>
-			<integer>2</integer>
-			<key>config</key>
-			<dict>
-				<key>keyword</key>
-				<string>vs</string>
-				<key>title</key>
-				<string>VS Code Recent Projects</string>
-				<key>subtext</key>
-				<string>Search and open VS Code recent projects</string>
-				<key>runningsubtext</key>
-				<string>Loading VS Code recent projects...</string>
-				<key>withspace</key>
-				<true/>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>argumenttrimmode</key>
-				<integer>0</integer>
-				<key>alfredfiltersresults</key>
-				<false/>
-				<key>alfredfiltersresultsmatchmode</key>
-				<integer>2</integer>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuedelaycustom</key>
-				<integer>0</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<true/>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>type</key>
-				<integer>0</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>script</key>
-				<string>/usr/bin/python3 "./recent_projects.py" code "$1"</string>
-			</dict>
-		</dict>
-		<dict>
-			<key>uid</key>
-			<string>INPUT-CO</string>
-			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
-			<key>version</key>
-			<integer>2</integer>
-			<key>config</key>
-			<dict>
-				<key>keyword</key>
-				<string>co</string>
-				<key>title</key>
-				<string>Cursor Recent Projects</string>
-				<key>subtext</key>
-				<string>Search and open Cursor recent projects</string>
-				<key>runningsubtext</key>
-				<string>Loading Cursor recent projects...</string>
-				<key>withspace</key>
-				<true/>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>argumenttrimmode</key>
-				<integer>0</integer>
-				<key>alfredfiltersresults</key>
-				<false/>
-				<key>alfredfiltersresultsmatchmode</key>
-				<integer>2</integer>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuedelaycustom</key>
-				<integer>0</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<true/>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>type</key>
-				<integer>0</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>script</key>
-				<string>/usr/bin/python3 "./recent_projects.py" cursor "$1"</string>
-			</dict>
-		</dict>
-		<dict>
-			<key>uid</key>
-			<string>ACTION-OPEN-VSCODE</string>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>version</key>
-			<integer>2</integer>
-			<key>config</key>
-			<dict>
-				<key>type</key>
-				<integer>5</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>concurrently</key>
-				<false/>
-				<key>script</key>
-				<string>/bin/zsh "./open_in_editor.sh" "code" "$1"</string>
-			</dict>
-		</dict>
-		<dict>
-			<key>uid</key>
-			<string>ACTION-OPEN-CURSOR</string>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>version</key>
-			<integer>2</integer>
-			<key>config</key>
-			<dict>
-				<key>type</key>
-				<integer>5</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>concurrently</key>
-				<false/>
-				<key>script</key>
-				<string>/bin/zsh "./open_in_editor.sh" "cursor" "$1"</string>
-			</dict>
-		</dict>
-	</array>
 	<key>connections</key>
 	<dict>
-		<key>INPUT-VS</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>ACTION-OPEN-VSCODE</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>INPUT-CO</key>
 		<array>
 			<dict>
@@ -200,15 +21,201 @@
 				<false/>
 			</dict>
 		</array>
+		<key>INPUT-VS</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>ACTION-OPEN-VSCODE</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
+	<key>createdby</key>
+	<string>vaL1nna</string>
+	<key>description</key>
+	<string>Search and open recent VS Code and Cursor projects from Alfred.</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>VS Code + Cursor Recents</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>2</integer>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>vs</string>
+				<key>queuedelaycustom</key>
+				<integer>0</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Loading VS Code recent projects...</string>
+				<key>script</key>
+				<string>/usr/bin/python3 "./recent_projects.py" code "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Search and open VS Code recent projects</string>
+				<key>title</key>
+				<string>VS Code Recent Projects</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>INPUT-VS</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>2</integer>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>co</string>
+				<key>queuedelaycustom</key>
+				<integer>0</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Loading Cursor recent projects...</string>
+				<key>script</key>
+				<string>/usr/bin/python3 "./recent_projects.py" cursor "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Search and open Cursor recent projects</string>
+				<key>title</key>
+				<string>Cursor Recent Projects</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>INPUT-CO</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/bin/zsh "./open_in_editor.sh" "code" "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>5</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>ACTION-OPEN-VSCODE</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/bin/zsh "./open_in_editor.sh" "cursor" "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>5</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>ACTION-OPEN-CURSOR</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string># VS Code + Cursor Recents
+
+Open recent **VS Code** and **Cursor** projects from Alfred.
+
+This workflow prefers each editor's native recent history from `state.vscdb` and falls back to `storage.json` when needed.
+
+## Highlights
+
+- macOS only
+- prefers native recent history from `state.vscdb`
+- supports VS Code, VS Code Insiders, Cursor, and Cursor Insiders
+- does not scan your disk
+
+## Configuration
+
+Leave overrides empty for standard installs.
+
+Use an override only when your editor stores recent history in a custom `state.vscdb` location.
+
+Set `debug_mode=1` only when troubleshooting.
+</string>
 	<key>uidata</key>
 	<dict>
-		<key>INPUT-VS</key>
+		<key>ACTION-OPEN-CURSOR</key>
 		<dict>
 			<key>xpos</key>
-			<integer>100</integer>
+			<integer>420</integer>
 			<key>ypos</key>
-			<integer>80</integer>
+			<integer>220</integer>
 		</dict>
 		<key>ACTION-OPEN-VSCODE</key>
 		<dict>
@@ -224,104 +231,92 @@
 			<key>ypos</key>
 			<integer>220</integer>
 		</dict>
-		<key>ACTION-OPEN-CURSOR</key>
+		<key>INPUT-VS</key>
 		<dict>
 			<key>xpos</key>
-			<integer>420</integer>
+			<integer>100</integer>
 			<key>ypos</key>
-			<integer>220</integer>
+			<integer>80</integer>
 		</dict>
 	</dict>
-	<key>webaddress</key>
-	<string>https://github.com/vaL1nna/alfred-vscode-cursor-recents</string>
-	<key>readme</key>
-	<string># VS Code + Cursor Recents
-
-Open recent **VS Code** and **Cursor** projects from Alfred.
-
-By default, this workflow reads each editor's native **Open Recent** cache.
-It also supports custom recent-cache locations when your setup is non-standard.
-
-## Highlights
-
-- macOS only
-- uses each editor's native **Open Recent** cache
-- supports VS Code, VS Code Insiders, Cursor, and Cursor Insiders
-- does not scan your disk
-
-## Configuration
-
-Leave the fields empty for standard installs.
-
-Use storage path overrides only when your editor stores recent data in a custom location.
-
-Set `debug_mode=1` only when troubleshooting.
-</string>
 	<key>userconfigurationconfig</key>
 	<array>
 		<dict>
-			<key>variable</key>
-			<string>vscode_storage_paths</string>
-			<key>label</key>
-			<string>VS Code storage paths override</string>
-			<key>description</key>
-			<string>Optional. Leave empty to use built-in default macOS VS Code storage paths.</string>
-			<key>type</key>
-			<string>textfield</string>
 			<key>config</key>
 			<dict>
 				<key>default</key>
 				<string></string>
 				<key>placeholder</key>
-				<string>~/Library/Application Support/Code/User/globalStorage/storage.json</string>
+				<string>~/Library/Application Support/Code/User/globalStorage/state.vscdb</string>
 				<key>required</key>
 				<false/>
 				<key>trim</key>
 				<true/>
 			</dict>
-		</dict>
-		<dict>
-			<key>variable</key>
-			<string>cursor_storage_paths</string>
-			<key>label</key>
-			<string>Cursor storage paths override</string>
 			<key>description</key>
-			<string>Optional. Leave empty to use built-in default macOS Cursor storage paths.</string>
+			<string>Optional. Leave empty unless VS Code uses a custom state.vscdb path.</string>
+			<key>label</key>
+			<string>VS Code recent history override</string>
 			<key>type</key>
 			<string>textfield</string>
+			<key>variable</key>
+			<string>vscode_recent_history_paths</string>
+		</dict>
+		<dict>
 			<key>config</key>
 			<dict>
 				<key>default</key>
 				<string></string>
 				<key>placeholder</key>
-				<string>~/Library/Application Support/Cursor/User/globalStorage/storage.json</string>
+				<string>~/Library/Application Support/Cursor/User/globalStorage/state.vscdb</string>
 				<key>required</key>
 				<false/>
 				<key>trim</key>
 				<true/>
 			</dict>
+			<key>description</key>
+			<string>Optional. Leave empty unless Cursor uses a custom state.vscdb path.</string>
+			<key>label</key>
+			<string>Cursor recent history override</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>cursor_recent_history_paths</string>
 		</dict>
 		<dict>
-			<key>variable</key>
-			<string>debug_mode</string>
-			<key>label</key>
-			<string>Debug mode</string>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>0</string>
+				<key>placeholder</key>
+				<string>0</string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
 			<key>description</key>
 			<string>Optional. Set to 1 only when troubleshooting.</string>
+			<key>label</key>
+			<string>Debug mode</string>
 			<key>type</key>
 			<string>textfield</string>
-			<key>config</key>
-			<dict>
-				<key>default</key>
-				<string>0</string>
-				<key>placeholder</key>
-				<string>0</string>
-				<key>required</key>
-				<false/>
-				<key>trim</key>
-				<true/>
-			</dict>
+			<key>variable</key>
+			<string>debug_mode</string>
 		</dict>
 	</array>
+	<key>variables</key>
+	<dict>
+		<key>debug_mode</key>
+		<string>0</string>
+		<key>vscode_recent_history_paths</key>
+		<string></string>
+		<key>cursor_recent_history_paths</key>
+		<string></string>
+	</dict>
+	<key>version</key>
+	<string>1.1.0</string>
+	<key>webaddress</key>
+	<string>https://github.com/vaL1nna/alfred-vscode-cursor-recents</string>
 </dict>
 </plist>
